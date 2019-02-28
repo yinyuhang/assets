@@ -6,12 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.querydsl.QPageRequest;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,33 +18,23 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    @GetMapping("/users/search")
-    Page<User> queryByName(int pageIndex, int size,
+    @GetMapping("/users")
+    Page<User> queryByName(int pageIndex, int pageSize,
                            @RequestParam(required = false) String name,
                            @RequestParam(required = false) String department) {
-        return userRepository.findByNameLikeAndDepartment(name, department, new QPageRequest(pageIndex, size));
-    }
-
-    @GetMapping("/user/name")
-    List<User> queryByName(String name) {
         Specification<User> specification = (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            //Attempt to sort by Surname, has no effect
-            query.orderBy(cb.asc(root.get("surname")));
-
-
-            //...snip...
-
-            Predicate[] array = predicates.toArray(new Predicate[predicates.size()]);
-            return cb.and(array);
+            if (!StringUtils.isEmpty(name)) {
+                Path<String> namePath = root.get("name");
+                predicates.add(cb.like(namePath, name));
+            }
+            if (!StringUtils.isEmpty(department)) {
+                Path<String> namePath = root.get("department");
+                predicates.add(cb.equal(namePath, department));
+            }
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
-        return null;
-    }
-
-    @GetMapping("/users")
-    Page<User> query(int pageIndex, int size) {
-        return userRepository.findAll(new QPageRequest(pageIndex, size));
+        return userRepository.findAll(specification, new QPageRequest(pageIndex, pageSize));
     }
 
     @PostMapping("/user")
