@@ -1,6 +1,6 @@
 package com.hfnu.assets.controller;
 
-import com.hfnu.assets.dao.UserRepository;
+import com.hfnu.assets.repository.UserRepository;
 import com.hfnu.assets.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
