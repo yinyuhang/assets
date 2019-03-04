@@ -1,5 +1,7 @@
 package com.hfnu.assets.pojo;
 
+import com.shark.generator.Condition;
+import com.shark.generator.ExpressionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,8 +23,11 @@ public class User {
     @GenericGenerator(name="idGenerator", strategy="uuid")
     @GeneratedValue(generator="idGenerator")
     String id;
+    @Condition(expression = ExpressionType.NOT_EMPTY, logic = "like")
     String name;
     String pwd;
     String createDate;
+    @Condition(expression = ExpressionType.NOT_EMPTY)
     String department;
+    String role;
 }

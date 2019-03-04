@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.querydsl.QPageRequest;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @RestController
 public class UserController {
@@ -19,18 +19,17 @@ public class UserController {
     UserRepository userRepository;
 
     @GetMapping("/users")
-    Page<User> queryByName(int pageIndex, int pageSize,
-                           @RequestParam(required = false) String name,
-                           @RequestParam(required = false) String department) {
+    Page<User> search(int pageIndex, int pageSize
+                                , @RequestParam(required = false) java.lang.String name
+                                , @RequestParam(required = false) java.lang.String department
+                            ) {
         Specification<User> specification = (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if (!StringUtils.isEmpty(name)) {
-                Path<String> namePath = root.get("name");
-                predicates.add(cb.like(namePath, name));
+            if (null != name && !name.isEmpty()) {
+                predicates.add(cb.like(root.get("name"), name));
             }
-            if (!StringUtils.isEmpty(department)) {
-                Path<String> namePath = root.get("department");
-                predicates.add(cb.equal(namePath, department));
+            if (null != department && !department.isEmpty()) {
+                predicates.add(cb.equal(root.get("department"), department));
             }
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };

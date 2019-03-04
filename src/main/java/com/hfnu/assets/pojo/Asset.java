@@ -30,9 +30,11 @@ public class Asset {
     String type;
     @Condition
     Double price;
-    @Condition(logic = "greaterThanOrEqualTo", expression = ExpressionType.NOT_NULL)
+    @Condition(expression = ExpressionType.NOT_EMPTY)
+    String status;
+    @Condition(logic = "greaterThanOrEqualTo")
     Date buyDate;
-    @Condition(logic = "greaterThanOrEqualTo", expression = ExpressionType.NOT_NULL)
+    @Condition(logic = "greaterThanOrEqualTo")
     Date createDate;
     @ManyToOne
     User createUser;
