@@ -36,4 +36,7 @@ public class Borrow {
     @ManyToOne
     @ChineseName("创建人")
     User createUser;
+    @ManyToOne
+    @ChineseName("修改人")
+    User modifyUser;
 }

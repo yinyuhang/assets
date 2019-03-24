@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.Date;
 
 
 @Data
@@ -26,10 +25,11 @@ public class User {
     String id;
     @Condition(expression = ExpressionType.NOT_EMPTY, logic = "like")
     @ChineseName("姓名")
+    @Column(unique = true)
     String name;
     String pwd;
     @ChineseName("创建时间")
-    String createDate;
+    Date createDate;
     @Condition(expression = ExpressionType.NOT_EMPTY)
     @ChineseName("部门")
     String department;

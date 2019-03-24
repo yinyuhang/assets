@@ -11,15 +11,18 @@ body {
     margin-bottom: 15px!important;
 }
 
-.main {
-    padding: 15px;
+.main,
+#section-search {
+    /*padding: 15px;*/
     border-radius: 5px;
     background-color: #fff;
 }
-.breadcrumb {
-    margin-bottom: 15px!important;
+.breadcrumb,
+#section-search {
+    /*margin-bottom: 15px!important;*/
     background: #fff!important;
 }
+
 ul.pagi {
     list-style: none;
     padding: 0;
@@ -33,7 +36,7 @@ ul.pagi li:last-child {
 }
 ul.pagi li:first-child::before {
     display: inline-block;
-    margin-right: -3px;
+    margin-right: 5px;
     content: '<';
     color: #999;
 }
@@ -52,20 +55,24 @@ ul.pagi,
 ul.pagi li {
     color: #999;
 }
-table tbody {
+table.main-table tbody {
     display: block;
     height: 400px;
     overflow-y: scroll;
 }
-table thead, tbody tr {
+table.main-table thead, table.main-table tbody tr {
     display: table;
     width: 100%;
     table-layout: fixed;
+}
+table.main-table thead {
+    width: calc(100% - 17px)!important;
 }
 footer {
     margin-top: 20px;
 }
 
-.count {
+.count,
+.pagination-item a.current {
     color: #409eff !important;
 }

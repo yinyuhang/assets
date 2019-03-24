@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>index</title>
-    <link rel="stylesheet" href="/framework/bootstrap/bootstrap.css">
+    <title>个人资产</title>
     <link rel="stylesheet" href="/css/common.css"/>
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
+
+    <script type="text/javascript" src="/js/jquery-1.8.3.min.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="/js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+
 </head>
 <body>
 <div class="container">
@@ -21,15 +29,15 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">Brand</a>
+                <a class="navbar-brand" href="#">个人资产</a>
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Link</a></li>
-                    <li><a href="#">Link</a></li>
-                    <li><a href="#">Link</a></li>
-                    <li><a href="#">Link</a></li>
-                    <li><a href="#">Link</a></li>
+                    <li><a href="/html/asset.html">资产管理</a></li>
+                    <li class="active"><a href="/html/borrow.html">借取记录</a></li>
+                    <li><a href="/html/scrap.html">报废记录</a></li>
+                    <li><a href="/html/user.html">用户管理</a></li>
+                    <li><a href="/html/log.html">登录日志</a></li>
                 </ul>
             </div>
         </div>
@@ -37,34 +45,75 @@
 
     <!-- 路径导航 -->
     <ol class="breadcrumb">
-        <li class="active">Data</li>
+        <li class="active">首页</li>
     </ol>
-
-    <main class="main">
-        <!-- 查询表单 -->
-        <section>
-            <form class="form-inline form-search clearfix">
-                <div class="row">
-                    <div class="form-group col-sm-6 col-lg-3">
-                        <label class="control-label">状态</label>
-                        <input name="status" type="text" class="form-control">
+    <section id="section-search">
+        <section class="section-titel"><h5>搜索条件</h5></section>
+        <form id="search-form" class="form-inline form-search clearfix">
+            <div class="row">
+                <div class="form-group col-sm-6 col-lg-3">
+                    <label class="control-label">名称</label>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <input name="name" type="text" class="form-control">
+                        </div>
                     </div>
                 </div>
-                <button class="btn btn-default btn-search">查询</button>
-            </form>
-        </section>
+                <div class="form-group col-sm-6 col-lg-3">
+                    <label class="control-label">价格</label>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <input name="price" type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-6 col-lg-3">
+                    <label class="control-label">采购日期</label>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <input name="buyDate" readonly type="text" class="form-control date">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-6 col-lg-3">
+                    <label class="control-label">录入日期</label>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <input name="createDate" readonly type="text" class="form-control date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
 
+    <main class="main">
+        <section class="section-title">
+            <!--<h5 class="pull-left">主体数据</h5>-->
+            <div class="btn-group pull-right" style="margin-bottom: 15px;" role="group">
+                <button class="btn btn-default btn-add btn-primary" type="button" data-toggle="modal"
+                        data-target="#updateModal">新增</button>
+                <button class="btn btn-default btn-search" type="button">查询</button>
+                <button class="btn btn-default btn-clear pull-right" type="button">清空</button>
+            </div>
+        </section>
         <section>
-            <table class='table table-bordered'>
+            <table class='table table-bordered main-table'>
                 <thead>
                 <tr>
-                    <th>状态</th>
-                    <th>创建时间</th>
                     <th>资产编号</th>
-                    <th>创建人</th>
+                    <th>名称</th>
+                    <th>价格</th>
+                    <th>状态</th>
+                    <th>采购日期</th>
+                    <th>录入日期</th>
+                    <th>录入人</th>
+                    <th>修改人</th>
+                    <th>类型</th>
+                    <th>操作</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="data-table">
                 </tbody>
             </table>
         </section>
@@ -80,7 +129,43 @@
         <ul class="pagi customPagination pull-right"></ul>
     </footer>
 </div>
+
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModal"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">个人资产</h4>
+            </div>
+            <div class="modal-body">
+                <form id="update-form" class="form clearfix" style="padding: 15px">
+                    <div class="row">
+                        <input name="id" type="text" class="hidden" readonly>
+                        <div class="form-group">
+                            <label class="control-label">名称</label>
+                            <input name="name" type="text" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">价格</label>
+                            <input name="price" type="text" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">采购日期</label>
+                            <input name="buyDate" type="text" readonly class="form-control date">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="add">新增</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
 </body>
 </html>
-<script src="https://cdn.bootcss.com/jquery/3.3.0/jquery.min.js"></script>
-<script src="/js/common.js"></script>
+<script type="text/javascript" src="/js/common.js"></script>
+<script type="text/javascript" src="/js/asset.js"></script>

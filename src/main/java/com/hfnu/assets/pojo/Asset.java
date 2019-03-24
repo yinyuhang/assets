@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -37,6 +38,7 @@ public class Asset {
     String status;
     @Condition(logic = "greaterThanOrEqualTo")
     @ChineseName("采购日期")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     Date buyDate;
     @Condition(logic = "greaterThanOrEqualTo")
     @ChineseName("录入日期")

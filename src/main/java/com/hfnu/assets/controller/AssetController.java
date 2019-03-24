@@ -1,6 +1,8 @@
 package com.hfnu.assets.controller;
 
 import com.hfnu.assets.other.Constants;
+import com.hfnu.assets.other.UserService;
+import com.hfnu.assets.other.Utils;
 import com.hfnu.assets.pojo.Asset;
 import com.hfnu.assets.pojo.AssetType;
 import com.hfnu.assets.pojo.Borrow;
@@ -8,12 +10,15 @@ import com.hfnu.assets.repository.AssetRepository;
 import com.hfnu.assets.repository.BorrowRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.querydsl.QPageRequest;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,20 +30,18 @@ public class AssetController {
     AssetRepository assetRepository;
     @Autowired
     BorrowRepository borrowRepository;
+    @Autowired
+    UserService userService;
 
     @GetMapping("/assets")
     Page<Asset> search(int pageIndex, int pageSize
             , @RequestParam(required = false) java.lang.String name
             , @RequestParam(required = false) java.lang.String type
-            , @RequestParam(required = false) java.lang.String status
             , @RequestParam(required = false) java.lang.Double price
-            , @RequestParam(required = false) java.util.Date buyDate
-            , @RequestParam(required = false) java.util.Date createDate
+            , @RequestParam(required = false) Date buyDate
+            , @RequestParam(required = false) Date createDate
     ) {
-        if (status == null || status.isEmpty()) {
-            status = Constants.AVAILABLE;
-        }
-        return this.findByStatus(pageIndex, pageSize, name, type, price, status, buyDate, createDate);
+        return this.findByStatus(pageIndex, pageSize, name, type, price, Constants.AVAILABLE, buyDate, createDate);
     }
 
     @GetMapping("/scraps")
@@ -47,7 +50,7 @@ public class AssetController {
             , @RequestParam(required = false) Double price
             , @RequestParam(required = false) String type
             , @RequestParam(required = false) Date buyDate
-            , @RequestParam(required = false) java.util.Date createDate
+            , @RequestParam(required = false) Date createDate
     ) {
         return this.findByStatus(pageIndex, pageSize, name, type, price, Constants.SCRAP, buyDate, createDate);
     }
@@ -93,6 +96,7 @@ public class AssetController {
     @PutMapping("/asset/{id}")
     void update(Asset asset, @PathVariable String id) {
         assetRepository.findById(id).ifPresent(a -> {
+            asset.setModifyUser(userService.loadCurrentUser());
             BeanUtils.copyProperties(asset, a, "id", "status", "createUser");
             assetRepository.save(asset);
         });
@@ -101,7 +105,7 @@ public class AssetController {
     @PutMapping("/asset/borrow")
     void borrow(String id) {
         assetRepository.findById(id).ifPresent(asset -> {
-            Borrow record = new Borrow(null, Constants.LEND, new Date(), asset, null);
+            Borrow record = new Borrow(null, Constants.LEND, new Date(), asset, userService.loadCurrentUser(), null);
             asset.setStatus(Constants.LEND);
             assetRepository.save(asset);
             borrowRepository.save(record);
@@ -113,7 +117,9 @@ public class AssetController {
         assetRepository.findById(id).ifPresent(asset -> {
             borrowRepository.findByStatusEqualsAndAsset_Id(Constants.LEND, id).ifPresent(record -> {
                 record.setStatus(Constants.AVAILABLE);
+                record.setModifyUser(userService.loadCurrentUser());
                 borrowRepository.save(record);
+                asset.setModifyUser(userService.loadCurrentUser());
                 asset.setStatus(Constants.AVAILABLE);
                 assetRepository.save(asset);
             });
@@ -123,6 +129,7 @@ public class AssetController {
     @PutMapping("/asset/scrap")
     void scrap(String id) {
         assetRepository.findById(id).ifPresent(asset -> {
+            asset.setModifyUser(userService.loadCurrentUser());
             asset.setStatus(Constants.SCRAP);
             assetRepository.save(asset);
         });
@@ -132,5 +139,9 @@ public class AssetController {
     void delete(@PathVariable String id) {
         assetRepository.deleteById(id);
     }
-
+    @InitBinder
+    public void initBinder(WebDataBinder binder){
+        binder.registerCustomEditor(       Date.class,
+                new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true, 10));
+    }
 }

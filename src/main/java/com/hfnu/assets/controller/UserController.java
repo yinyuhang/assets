@@ -1,15 +1,18 @@
 package com.hfnu.assets.controller;
 
+import com.hfnu.assets.other.Constants;
 import com.hfnu.assets.repository.UserRepository;
 import com.hfnu.assets.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.querydsl.QPageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -17,6 +20,8 @@ import java.util.List;
 public class UserController {
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    PasswordEncoder encoder;
 
     @GetMapping("/users")
     Page<User> search(int pageIndex, int pageSize
@@ -37,14 +42,17 @@ public class UserController {
     }
 
     @PostMapping("/user")
-    User add(User user) {
-        return userRepository.save(user);
+    void add(User user) {
+        user.setRole(Constants.ROLE.USER.toString());
+        user.setCreateDate(new Date());
+        userRepository.save(user);
     }
 
     @PutMapping("/user/{id}")
-    User update(User user, @PathVariable String id) {
+    void update(User user, @PathVariable String id) {
         user.setId(id);
-        return userRepository.save(user);
+        user.setPwd(encoder.encode(user.getPwd()));
+        userRepository.save(user);
     }
 
     @DeleteMapping("/user/{id}")
