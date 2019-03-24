@@ -18,8 +18,4 @@ spring:
   mvc:
     view:
       suffix: html
-shiro:
-  enabled: false
-  web:
-    enabled: false
 

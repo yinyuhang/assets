@@ -2,6 +2,7 @@ package com.hfnu.assets.controller;
 
 import com.hfnu.assets.other.Constants;
 import com.hfnu.assets.pojo.Asset;
+import com.hfnu.assets.pojo.AssetType;
 import com.hfnu.assets.pojo.Borrow;
 import com.hfnu.assets.repository.AssetRepository;
 import com.hfnu.assets.repository.BorrowRepository;
@@ -12,10 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,29 +30,31 @@ public class AssetController {
     Page<Asset> search(int pageIndex, int pageSize
             , @RequestParam(required = false) java.lang.String name
             , @RequestParam(required = false) java.lang.String type
-            , @RequestParam(required = false) java.lang.Double price
             , @RequestParam(required = false) java.lang.String status
+            , @RequestParam(required = false) java.lang.Double price
             , @RequestParam(required = false) java.util.Date buyDate
             , @RequestParam(required = false) java.util.Date createDate
     ) {
-        return this.findByStatus(pageIndex, pageSize, name, type, price, status, buyDate, createDate, false);
+        if (status == null || status.isEmpty()) {
+            status = Constants.AVAILABLE;
+        }
+        return this.findByStatus(pageIndex, pageSize, name, type, price, status, buyDate, createDate);
     }
 
     @GetMapping("/scraps")
     Page<Asset> search(int pageIndex, int pageSize
             , @RequestParam(required = false) String name
-            , @RequestParam(required = false) String type
-            , @RequestParam(required = false) String status
             , @RequestParam(required = false) Double price
+            , @RequestParam(required = false) String type
             , @RequestParam(required = false) Date buyDate
             , @RequestParam(required = false) java.util.Date createDate
     ) {
-        return this.findByStatus(pageIndex, pageSize, name, type, price, status, buyDate, createDate, true);
+        return this.findByStatus(pageIndex, pageSize, name, type, price, Constants.SCRAP, buyDate, createDate);
     }
 
-    private Page<Asset> findByStatus (int pageIndex, int pageSize
+    private Page<Asset> findByStatus(int pageIndex, int pageSize
             , String name, String type, Double price
-            , String status, Date buyDate, Date createDate, boolean isScrap) {
+            , String status, Date buyDate, Date createDate) {
 
         Specification<Asset> specification = (Root<Asset> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -63,17 +63,14 @@ public class AssetController {
                 predicates.add(cb.like(root.get("name"), name));
             }
             if (null != type && !type.isEmpty()) {
-                predicates.add(cb.equal(root.get("type"), type));
+                Join<Asset, AssetType> typeJoin = root.join("type", JoinType.LEFT);
+                predicates.add(cb.equal(typeJoin.get("name"), type));
             }
             if (null != price) {
                 predicates.add(cb.equal(root.get("price"), price));
             }
             if (null != status && !status.isEmpty()) {
                 predicates.add(cb.equal(root.get("status"), status));
-            } else if (isScrap) {
-                predicates.add(cb.equal(root.get("status"), Constants.SCRAP));
-            } else {
-                predicates.add(cb.notEqual(root.get("status"), Constants.SCRAP));
             }
             if (null != buyDate) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("buyDate"), buyDate));
@@ -88,7 +85,8 @@ public class AssetController {
 
     @PostMapping("/asset")
     Asset add(Asset asset) {
-        asset.setStatus(Constants.REMAND);
+        asset.setStatus(Constants.AVAILABLE);
+        asset.setCreateDate(new Date());
         return assetRepository.save(asset);
     }
 
@@ -114,9 +112,9 @@ public class AssetController {
     void remand(String id) {
         assetRepository.findById(id).ifPresent(asset -> {
             borrowRepository.findByStatusEqualsAndAsset_Id(Constants.LEND, id).ifPresent(record -> {
-                record.setStatus(Constants.REMAND);
+                record.setStatus(Constants.AVAILABLE);
                 borrowRepository.save(record);
-                asset.setStatus(Constants.REMAND);
+                asset.setStatus(Constants.AVAILABLE);
                 assetRepository.save(asset);
             });
         });

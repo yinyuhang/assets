@@ -53,10 +53,10 @@
             <artifactId>querydsl-jpa</artifactId>
             <version>4.0.0</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.shark</groupId>
             <artifactId>generator</artifactId>

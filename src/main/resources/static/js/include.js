@@ -24,9 +24,22 @@ includeFiles.push({
     "type": "script",
     "attrs": {"src": "/framework/bootstrap/bootstrap.js"},
 })
-
+// import common.css
+includeFiles.push({
+    "type": "link",
+    "attrs": {"href": "/css/common.css", "rel": "stylesheet", "type": "text/css"},
+})
+includeFiles.push({
+    "type": "script",
+    "attrs": {"src": "/js/common.js"},
+})
 function importFile(position) {
-    var ele = document.getElementById(position)
+    var ele
+    if (position)
+        ele = document.getElementById(position)
+    else
+        ele = document.getElementsByTagName("head")[0]
+
     var files = includeFiles
     files.forEach(function (value) {
         var node = document.createElement(value.type)
@@ -37,5 +50,5 @@ function importFile(position) {
 }
 
 window.onload=function () {
-    importFile("include")
+    importFile()
 }

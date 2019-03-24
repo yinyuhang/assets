@@ -1,5 +1,6 @@
 package com.hfnu.assets.pojo;
 
+import com.shark.generator.ChineseName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,11 @@ public class Log {
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     String id;
+    @ChineseName("登入时间")
     Date createDate;
     @ManyToOne
+    @ChineseName("登入人")
     User createUser;
+    @ChineseName("登入IP")
+    String ip;
 }
