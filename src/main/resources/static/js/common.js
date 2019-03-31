@@ -126,4 +126,13 @@ $(function () {
         }
     })
 
+    $(".btn-search").click(function () {
+        loadTable()
+    })
 })
+
+function formatDate (data, attr) {
+    if (data[attr]) {
+        data[attr] = data[attr].substr(0, 10)
+    }
+}

@@ -49,6 +49,7 @@ public class UserController {
     void add(User user) {
         user.setRole(Constants.ROLE.USER.toString());
         user.setCreateDate(new Date());
+        user.setPwd(encoder.encode(user.getPwd()));
         userRepository.save(user);
     }
 
