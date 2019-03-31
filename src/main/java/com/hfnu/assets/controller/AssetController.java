@@ -2,10 +2,9 @@ package com.hfnu.assets.controller;
 
 import com.hfnu.assets.other.Constants;
 import com.hfnu.assets.other.UserService;
-import com.hfnu.assets.other.Utils;
 import com.hfnu.assets.pojo.Asset;
-import com.hfnu.assets.pojo.AssetType;
 import com.hfnu.assets.pojo.Borrow;
+import com.hfnu.assets.pojo.User;
 import com.hfnu.assets.repository.AssetRepository;
 import com.hfnu.assets.repository.BorrowRepository;
 import org.springframework.beans.BeanUtils;
@@ -66,8 +65,7 @@ public class AssetController {
                 predicates.add(cb.like(root.get("name"), name));
             }
             if (null != type && !type.isEmpty()) {
-                Join<Asset, AssetType> typeJoin = root.join("type", JoinType.LEFT);
-                predicates.add(cb.equal(typeJoin.get("name"), type));
+                predicates.add(cb.equal(root.get("type"), type));
             }
             if (null != price) {
                 predicates.add(cb.equal(root.get("price"), price));
@@ -81,6 +79,7 @@ public class AssetController {
             if (null != createDate) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("createDate"), createDate));
             }
+            predicates.add(cb.equal(root.get("beDeleted"), false));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
         return assetRepository.findAll(specification, new QPageRequest(pageIndex, pageSize));
@@ -90,6 +89,8 @@ public class AssetController {
     Asset add(Asset asset) {
         asset.setStatus(Constants.AVAILABLE);
         asset.setCreateDate(new Date());
+        asset.setCreateUser(userService.loadCurrentUser());
+        asset.setModifyUser(userService.loadCurrentUser());
         return assetRepository.save(asset);
     }
 
@@ -97,7 +98,7 @@ public class AssetController {
     void update(Asset asset, @PathVariable String id) {
         assetRepository.findById(id).ifPresent(a -> {
             asset.setModifyUser(userService.loadCurrentUser());
-            BeanUtils.copyProperties(asset, a, "id", "status", "createUser");
+            BeanUtils.copyProperties(asset, a, "id", "status", "createUser", "beDeleted");
             assetRepository.save(asset);
         });
     }
@@ -105,8 +106,11 @@ public class AssetController {
     @PutMapping("/asset/borrow")
     void borrow(String id) {
         assetRepository.findById(id).ifPresent(asset -> {
-            Borrow record = new Borrow(null, Constants.LEND, new Date(), asset, userService.loadCurrentUser(), null);
+            User currentUser = userService.loadCurrentUser();
+            Borrow record = new Borrow(null, Constants.LEND, new Date(), asset,
+                    currentUser, currentUser);
             asset.setStatus(Constants.LEND);
+            asset.setModifyUser(currentUser);
             assetRepository.save(asset);
             borrowRepository.save(record);
         });
@@ -135,13 +139,27 @@ public class AssetController {
         });
     }
 
+    @PutMapping("/asset/repair")
+    void repair(String id) {
+        assetRepository.findById(id).ifPresent(asset -> {
+            asset.setModifyUser(userService.loadCurrentUser());
+            asset.setStatus(Constants.AVAILABLE);
+            assetRepository.save(asset);
+        });
+    }
+
     @DeleteMapping("/asset/{id}")
     void delete(@PathVariable String id) {
-        assetRepository.deleteById(id);
+        assetRepository.findById(id).ifPresent(asset -> {
+            asset.setModifyUser(userService.loadCurrentUser());
+            asset.setBeDeleted(true);
+            assetRepository.save(asset);
+        });
     }
+
     @InitBinder
-    public void initBinder(WebDataBinder binder){
-        binder.registerCustomEditor(       Date.class,
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Date.class,
                 new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true, 10));
     }
 }

@@ -43,14 +43,15 @@ public class Asset {
     @Condition(logic = "greaterThanOrEqualTo")
     @ChineseName("录入日期")
     Date createDate;
+    Date modifyDate;
     @ManyToOne
     @ChineseName("录入人")
     User createUser;
     @ManyToOne
     @ChineseName("修改人")
     User modifyUser;
-    @ManyToOne
     @Condition
     @ChineseName("类型")
-    AssetType type;
+    String type;
+    boolean beDeleted;
 }

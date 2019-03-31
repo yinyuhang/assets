@@ -35,4 +35,5 @@ public class User {
     String department;
     @ChineseName("角色")
     String role;
+    boolean beDeleted;
 }

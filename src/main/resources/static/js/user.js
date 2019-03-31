@@ -1,11 +1,9 @@
 var trTemplate = "<tr>\n" +
-    "                    <th>${id\}</th>\n" +
-    "                    <th>${status}</th>\n" +
-    "                    <th>${createDate}</th>\n" +
-    "                    <th>${asset}</th>\n" +
-    "                    <th>${createUser}</th>\n" +
-    "                    <th>${modifyUser}</th>\n" +
-    "                    <th><a onclick='remand(this)'>归还</a></th>\n" +
+    "                    <th>\$\{name\}</th>\n" +
+    "                    <th>\$\{createDate\}</th>\n" +
+    "                    <th>\$\{department\}</th>\n" +
+    "                    <th>\$\{role\}</th>\n" +
+    "                    <th><a onclick='remove(this)'>删除</a></th>\n" +
     "                </tr>"
 
 
@@ -26,7 +24,7 @@ function fill(data) {
 }
 
 function loadTable(goNext) {
-    var uri = "/borrows"
+    var uri = "/users"
     var conditions = $("#search-form").serializeArray()
     var parameters = {}
     for (var index in conditions) {
@@ -56,9 +54,6 @@ function loadTable(goNext) {
                     data["createDate"] = data["createDate"].substr(0, 10)
                 if (data["buyDate"])
                     data["buyDate"] = data["buyDate"].substr(0, 10)
-                if (data.asset) {
-                    data.asset = data.asset.id.substr(0, 6);
-                }
                 tBody.append(fill(data))
             }
             var pageIndex = result['number'];
@@ -77,23 +72,44 @@ function loadTable(goNext) {
     })
 }
 
-function remand(ele) {
+function remove(ele) {
     var id = $(ele).parents("tr").children("th").first().children("input").val()
     if (!id) {
         alert("未找到有效ID")
         return
     }
     $.ajax({
-        type: "PUT",
-        url: "/asset/remand",
-        data: {"id": id},
+        type: "DELETE",
+        url: "/user/" + id,
+        data: {},
         success: function (result) {
             loadTable()
-            alert("归还成功")
+            alert("已删除")
         }
     })
 }
 
+function add() {
+    var datas = $("#update-form").serializeArray()
+    var parameters = {}
+    for (var index in datas) {
+        var data = datas[index]
+        if (data.value) {
+            parameters[data.name] = data.value
+        }
+    }
+    $.ajax({
+        type: "POST",
+        url: "/user/",
+        data: parameters,
+        success: function (result) {
+            loadTable()
+            alert("新增成功")
+            $("#update-form")[0].reset()
+            $("#updateModal").modal("hide")
+        }
+    })
+}
 
 $(function () {
     // $(".btn-search").click(loadTable)
@@ -103,5 +119,6 @@ $(function () {
     $(".btn-clear").click(function () {
         $("#search-form")[0].reset()
     })
+    $("#add").click(add)
 })
 

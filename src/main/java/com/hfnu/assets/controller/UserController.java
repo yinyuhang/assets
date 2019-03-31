@@ -1,8 +1,8 @@
 package com.hfnu.assets.controller;
 
 import com.hfnu.assets.other.Constants;
-import com.hfnu.assets.repository.UserRepository;
 import com.hfnu.assets.pojo.User;
+import com.hfnu.assets.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -10,7 +10,10 @@ import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,9 +28,9 @@ public class UserController {
 
     @GetMapping("/users")
     Page<User> search(int pageIndex, int pageSize
-                                , @RequestParam(required = false) java.lang.String name
-                                , @RequestParam(required = false) java.lang.String department
-                            ) {
+            , @RequestParam(required = false) java.lang.String name
+            , @RequestParam(required = false) java.lang.String department
+    ) {
         Specification<User> specification = (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (null != name && !name.isEmpty()) {
@@ -36,6 +39,7 @@ public class UserController {
             if (null != department && !department.isEmpty()) {
                 predicates.add(cb.equal(root.get("department"), department));
             }
+            predicates.add(cb.notEqual(root.get("name"), "admin"));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
         return userRepository.findAll(specification, new QPageRequest(pageIndex, pageSize));
@@ -49,15 +53,19 @@ public class UserController {
     }
 
     @PutMapping("/user/{id}")
-    void update(User user, @PathVariable String id) {
-        user.setId(id);
-        user.setPwd(encoder.encode(user.getPwd()));
-        userRepository.save(user);
+    void update(@PathVariable String id, String pwd) {
+        userRepository.findById(id).ifPresent(user -> {
+            user.setPwd(encoder.encode(user.getPwd()));
+            userRepository.save(user);
+        });
     }
 
     @DeleteMapping("/user/{id}")
     void delete(@PathVariable String id) {
-        userRepository.deleteById(id);
+        userRepository.findById(id).ifPresent(user -> {
+            user.setBeDeleted(true);
+            userRepository.save(user);
+        });
     }
 
 }
