@@ -7,13 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.querydsl.QPageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +45,7 @@ public class UserController {
                 predicates.add(cb.equal(root.get("department"), department));
             }
             predicates.add(cb.notEqual(root.get("name"), "admin"));
+            predicates.add(cb.equal(root.get("beDeleted"), false));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
         return userRepository.findAll(specification, new QPageRequest(pageIndex, pageSize));
@@ -51,6 +57,15 @@ public class UserController {
         user.setCreateDate(new Date());
         user.setPwd(encoder.encode(user.getPwd()));
         userRepository.save(user);
+    }
+
+    @PutMapping("/user/logout")
+    void logout(HttpServletRequest req, HttpServletResponse resp) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(req, resp, auth);
+        }
+        req.getSession().removeAttribute("user");
     }
 
     @PutMapping("/user/{id}")

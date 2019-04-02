@@ -16,7 +16,10 @@ import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -118,15 +121,13 @@ public class AssetController {
 
     @PutMapping("/asset/remand")
     void remand(String id) {
-        assetRepository.findById(id).ifPresent(asset -> {
-            borrowRepository.findByStatusEqualsAndAsset_Id(Constants.LEND, id).ifPresent(record -> {
-                record.setStatus(Constants.AVAILABLE);
-                record.setModifyUser(userService.loadCurrentUser());
-                borrowRepository.save(record);
-                asset.setModifyUser(userService.loadCurrentUser());
-                asset.setStatus(Constants.AVAILABLE);
-                assetRepository.save(asset);
-            });
+        borrowRepository.findByStatusEqualsAndId(Constants.LEND, id).ifPresent(record -> {
+            record.setStatus(Constants.AVAILABLE);
+            record.setModifyUser(userService.loadCurrentUser());
+            borrowRepository.save(record);
+            record.getAsset().setModifyUser(userService.loadCurrentUser());
+            record.getAsset().setStatus(Constants.AVAILABLE);
+            assetRepository.save(record.getAsset());
         });
     }
 

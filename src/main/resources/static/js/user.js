@@ -1,8 +1,9 @@
 var trTemplate = "<tr>\n" +
-    "                    <th>\$\{name\}</th>\n" +
-    "                    <th>\$\{createDate\}</th>\n" +
-    "                    <th>\$\{department\}</th>\n" +
-    "                    <th>\$\{role\}</th>\n" +
+    "                    <th>${id}</th>\n" +
+    "                    <th>${name}</th>\n" +
+    "                    <th>${createDate}</th>\n" +
+    "                    <th>${department}</th>\n" +
+    "                    <th>${role}</th>\n" +
     "                    <th><a onclick='remove(this)'>删除</a></th>\n" +
     "                </tr>"
 

@@ -16,6 +16,14 @@ function fill(data) {
     var tr = trTemplate
     var id = "<input class='hide' value='" + data.id + "' readonly/>" + data.id.substr(0, 6);
     tr = tr.replace("${id}", id)
+    if (data["status"]){
+        if (""+data["status"]  == "lend") {
+            data["status"] = "借出"
+        } else {
+            data["status"] = "已归还"
+        }
+    }
+    tr = tr.replace("归还", "")
     for (var attr in data) {
         if (!data[attr]) {
             data[attr] = ""

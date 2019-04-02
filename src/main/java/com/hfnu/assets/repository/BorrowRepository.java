@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface BorrowRepository extends JpaRepository<Borrow, String>, JpaSpecificationExecutor<Borrow> {
     Optional<Borrow> findByStatusEqualsAndAsset_Id(String status, String id);
+    Optional<Borrow> findByStatusEqualsAndId(String status, String id);
 }
